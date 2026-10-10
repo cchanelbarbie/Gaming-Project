@@ -1,0 +1,10 @@
+import {cp,mkdir,writeFile,rm} from 'node:fs/promises';
+import {build} from 'esbuild';
+const root=new URL('../',import.meta.url);
+await rm(new URL('dist/',root),{recursive:true,force:true});
+await mkdir(new URL('dist/',root),{recursive:true});
+await cp(new URL('public/',root),new URL('dist/',root),{recursive:true});
+await writeFile(new URL('dist/_headers',root),`/*\n  X-Content-Type-Options: nosniff\n  Referrer-Policy: no-referrer\n  Content-Security-Policy: default-src 'self'; connect-src 'self'; style-src 'self'; script-src 'self'; base-uri 'none'; frame-ancestors 'none'\n  Cache-Control: no-cache\n`);
+await mkdir(new URL('.netlify/functions/game/',root),{recursive:true});
+await build({entryPoints:[new URL('netlify/functions/game.ts',root).pathname],outfile:new URL('.netlify/functions/game/game.mjs',root).pathname,bundle:true,platform:'node',target:'node22',format:'esm'});
+console.log('Frontend built in dist; bundled function in .netlify/functions/game/game.mjs');
